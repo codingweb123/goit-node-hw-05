@@ -3,7 +3,7 @@ import { User } from "../models/user.js"
 import bcrypt from "bcrypt"
 import { createSession, setSessionCookies } from "../services/auth.js"
 import { Session } from "../models/session.js"
-import { sendMail } from "../utils/sendMail.js"
+import { sendEmail } from "../utils/sendMail.js"
 import path from "node:path"
 import fs from "node:fs/promises"
 import handlebars from "handlebars"
@@ -39,9 +39,7 @@ export const requestResetEmail = async (req, res) => {
 	const user = await User.findOne({ email })
 
 	if (!user) {
-		return res.status(200).json({
-			message: "If this user exists, a reset link has been sent",
-		})
+		throw createHttpError(404, "User not found")
 	}
 
 	const resetToken = jwt.sign(
@@ -60,7 +58,7 @@ export const requestResetEmail = async (req, res) => {
 	})
 
 	try {
-		await sendMail({
+		await sendEmail({
 			from: process.env.SMTP_FROM,
 			to: email,
 			subject: "Reset your password",
@@ -138,7 +136,7 @@ export const refreshUserSession = async (req, res) => {
 
 	const session = await Session.findOne({
 		_id: sessionId,
-		refreshToken: refreshToken,
+		refreshToken,
 	})
 
 	if (!session) {
@@ -154,7 +152,7 @@ export const refreshUserSession = async (req, res) => {
 
 	await Session.deleteOne({
 		_id: sessionId,
-		refreshToken: refreshToken,
+		refreshToken,
 	})
 
 	const newSession = await createSession(session.userId)
