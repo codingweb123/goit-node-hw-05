@@ -118,10 +118,14 @@ export const loginUser = async (req, res) => {
 }
 
 export const logoutUser = async (req, res) => {
-	const { sessionId } = req.cookies
+	const { sessionId, refreshToken } = req.cookies
 
 	if (sessionId) {
 		await Session.deleteOne({ _id: sessionId })
+	}
+
+	if (refreshToken) {
+		await Session.deleteOne({ refreshToken })
 	}
 
 	res.clearCookie("sessionId")
@@ -132,12 +136,15 @@ export const logoutUser = async (req, res) => {
 }
 
 export const refreshUserSession = async (req, res) => {
-	const { sessionId, refreshToken } = req.cookies
+	const refreshToken = req.cookies.refreshToken
+		? req.cookies.refreshToken
+		: req.myCookies.refreshToken
 
 	const session = await Session.findOne({
-		_id: sessionId,
 		refreshToken,
 	})
+
+	console.log(`Session: ${session} refreshToken: ${refreshToken}`)
 
 	if (!session) {
 		throw createHttpError(401, "Session not found")
@@ -151,11 +158,11 @@ export const refreshUserSession = async (req, res) => {
 	}
 
 	await Session.deleteOne({
-		_id: sessionId,
 		refreshToken,
 	})
 
 	const newSession = await createSession(session.userId)
+	console.log("HERE?")
 	setSessionCookies(res, newSession)
 
 	res.status(200).json({

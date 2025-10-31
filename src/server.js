@@ -11,6 +11,7 @@ import userRoutes from "./routes/userRoutes.js"
 import helmet from "helmet"
 import { errors } from "celebrate"
 import cookieParser from "cookie-parser"
+import myCookieParser from "./middleware/myCookieParser.js"
 
 const app = express()
 const PORT = process.env.PORT ?? 3030
@@ -25,6 +26,7 @@ app.use(cors())
 app.use(helmet())
 app.use(logger)
 app.use(cookieParser())
+app.use(myCookieParser)
 
 app.use(authRoutes)
 app.use(notesRoutes)
