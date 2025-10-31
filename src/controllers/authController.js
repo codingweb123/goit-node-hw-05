@@ -144,8 +144,6 @@ export const refreshUserSession = async (req, res) => {
 		refreshToken,
 	})
 
-	console.log(`Session: ${session} refreshToken: ${refreshToken}`)
-
 	if (!session) {
 		throw createHttpError(401, "Session not found")
 	}
@@ -162,7 +160,6 @@ export const refreshUserSession = async (req, res) => {
 	})
 
 	const newSession = await createSession(session.userId)
-	console.log("HERE?")
 	setSessionCookies(res, newSession)
 
 	res.status(200).json({
